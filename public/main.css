@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+:root {
+  --black: #414141;
+  --dark-black: #272727;
+  --medium-large-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+  --large-large-shadow: rgb(36, 36, 36) 0px 20px 30px -10px;
+}
+
+body {
+  background-color: var(--black);
+  margin: 0px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* SET GLOBAL CLASSES */
+.dflex {
+  display: flex;
+}
+
+.flex-centered {
+  justify-content: center;
+  align-items: center;
+}
+
+.fullscreen {
+  width: 100vw;
+  height: 100vh;
+}
