@@ -25,11 +25,9 @@ export default {
 .main-button {
   width: 200px;
   height: 200px;
-  border-radius: 50%;
-  -moz-box-shadow: var(--medium-large-shadow);
-  -webkit-box-shadow: var(--medium-large-shadow);
+  border-radius: 8%;
   box-shadow: var(--medium-large-shadow);
-  border: 12px solid white;
+  border: 2px solid white;
   background-color: var(--dark-black);
   margin: 30px;
   flex-direction: column;
@@ -41,9 +39,12 @@ export default {
   -webkit-box-shadow: var(--large-large-shadow);
   box-shadow: var(--large-large-shadow);
 }
-
 .main-button img {
   width: 90px;
+  transition: all 0.2s ease-in-out;
+}
+.main-button:hover img {
+  transform: scale(1.1);
 }
 
 .text {
@@ -54,9 +55,8 @@ export default {
   text-transform: uppercase;
   margin-bottom: 0px;
   padding: 8px 10px;
-  margin-left: 10px;
-  margin-right: 10px;
   text-decoration: none;
-  border-radius: 43px;
+  width: 100%;
+  margin-top: 18px;
 }
 </style>
