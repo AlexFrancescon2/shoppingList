@@ -15,8 +15,8 @@ class helpers {
         var keyA = new Date(a["" + paramName + ""]),
           keyB = new Date(b["" + paramName + ""]);
         // Compare the 2 dates
-        if (keyA < keyB) return -1;
-        if (keyA > keyB) return 1;
+        if (keyA > keyB) return -1;
+        if (keyA < keyB) return 1;
         return 0;
       });
     } else if (type === "string") {
@@ -27,6 +27,17 @@ class helpers {
       });
     }
     return arr;
+  }
+  subsetListItems(arr) {
+    let newObj = {};
+    arr.forEach((element) => {
+      if (element.category in newObj) {
+        newObj["" + element.category + ""].push(element);
+      } else {
+        newObj["" + element.category + ""] = [element];
+      }
+    });
+    return newObj;
   }
   randomColor() {
     const trans = "0.85"; // 85% transparency

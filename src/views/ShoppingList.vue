@@ -5,150 +5,134 @@
     max-width="800"
     transition="custom-from-bottom-transition"
   >
+    OEEEH
   </GDialog>
-  <BreadCrumb :path="breadCrumbData" />0
-  <div class="Units content">
-    <h1>Units</h1>
-    <div class="content-box">
-      <h5>Add new unit</h5>
-      <form @submit="add">
-        <div class="row">
-          <div class="col-md-4">
-            <FormElement
-              label="Value"
-              type="text"
-              id="value"
-              @onInput="
-                (newValue) => {
-                  value = newValue;
-                  resetMessage();
-                }
-              "
-            />
-          </div>
-          <div class="col-md-4">
-            <FormElement
-              label="Type"
-              type="select"
-              id="type"
-              :values="['Weight', 'Quantity', 'Capacity']"
-              @onInput="
-                (newValue) => {
-                  type = newValue;
-                  resetMessage();
-                }
-              "
-            />
-          </div>
-        </div>
-        <div v-if="message && messageType" class="my-3">
-          <MessageBox :message="message" :type="messageType" />
-        </div>
-        <button type="submit" class="btn btn-custom">Save</button>
-      </form>
+  <BreadCrumb :path="breadCrumbData" />
+  <div class="content">
+    <div
+      v-if="Object.keys(shoppingList).length === 0 && !isLoading"
+      class="box"
+    >
+      <p>Error. The list you are looking for does not exist.</p>
     </div>
-    <div class="content-box mt-4">
-      <h5>Unit list</h5>
-      <div class="row mb-3">
-        <div
-          class="col-12 col-md-6 col-lg-4"
-          v-for="param in unitList"
-          :key="param.id"
-        >
+    <div v-else>
+      <h1>{{ shoppingList.name }}</h1>
+      <div>
+        <div v-for="(category, key) in shoppingList.items" :key="category">
+          <div class="strike mb-2">
+            <span>
+              <img
+                :src="require('@/assets/icons/category.svg')"
+                class="icon category-icon"
+              />
+              {{ key }}
+            </span>
+          </div>
           <div class="row">
-            <div class="col-8">
-              <div class="unit-box">
-                <span>{{ param.value }} ({{ param.type }})</span>
+            <div
+              class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3"
+              v-for="item in category"
+              :key="item.id"
+            >
+              <div
+                :class="[
+                  'list-item',
+                  selectedItems.includes(item.id) ? 'selected' : '',
+                ]"
+                @click="
+                  () => {
+                    selectItem(item.id);
+                  }
+                "
+              >
+                <div>
+                  <h4>{{ item.name }}</h4>
+                  <p>{{ item.amount }} {{ item.unit }}</p>
+                </div>
+                <div class="amountinput">
+                  <button
+                    class="input plus"
+                    @click="
+                      ($event) => {
+                        editAmount($event, item.id, '+');
+                      }
+                    "
+                  >
+                    <span>+</span>
+                  </button>
+                  <button
+                    class="input minus"
+                    @click="
+                      ($event) => {
+                        editAmount($event, item.id, '-');
+                      }
+                    "
+                  >
+                    <span>-</span>
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="col-4 buttons-wrapper">
-              <button
-                type="button"
-                class="btn btn-info d-flex flex-centered mr-3"
-                @click="
-                  () => {
-                    openDialog(param);
-                  }
-                "
-              >
-                <img
-                  :src="require(`@/assets/icons/edit.svg`)"
-                  class="icon edit-icon"
-                />
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger d-flex flex-centered"
-                @click="
-                  () => {
-                    remove(param.id);
-                  }
-                "
-              >
-                <img
-                  :src="require(`@/assets/icons/trash.svg`)"
-                  class="icon trash-icon"
-                />
-              </button>
             </div>
           </div>
         </div>
       </div>
-      <p class="font-italic" v-if="!unitList.length">
-        There are no units to display.
-      </p>
     </div>
   </div>
 </template>
 
 <script>
-import FormElement from "../components/FormElement.vue";
-import MessageBox from "../components/MessageBox.vue";
+// import FormElement from "../components/FormElement.vue";
+// import MessageBox from "../components/MessageBox.vue";
 import BreadCrumb from "../components/BreadCrumb.vue";
 import Loader from "../components/Loader.vue";
-import unitServices from "../services/unitServices";
+// import unitServices from "../services/unitServices";
+import shoppingListServices from "../services/shoppingListServices";
 import helpers from "../services/helpers";
 export default {
   name: "ShoppingList",
-  components: { Loader, FormElement, MessageBox, BreadCrumb },
-  props: ['id'],
+  components: { Loader, BreadCrumb },
+  props: ["id"],
   data: function () {
     return {
       isLoading: false,
       dialogState: false,
       message: "",
-      editMessage: "",
-      messageType: "",
-      value: "",
-      type: "",
+      unorderedShoppingList: {},
+      shoppingList: {},
+      selectedItems: [],
       unitList: [],
-      editData: {
-        id: null,
-        value: null,
-        type: null,
-      },
       breadCrumbData: [
         {
           name: "Home",
           url: "/",
         },
         {
-          name: "Settings",
-          url: "/settings",
+          name: "Manage shopping",
+          url: "/manage-shopping",
         },
         {
-          name: "Units",
-          url: "/settings/units",
+          name: "Manage Lists",
+          url: "/manage-shopping/manage-lists",
+        },
+        {
+          name: "...",
+          url: "/",
         },
       ],
     };
   },
   mounted() {
     this.isLoading = true;
-    unitServices
-      .getAll()
+    shoppingListServices
+      .getById(this.id)
       .then((result) => {
-        this.unitList = helpers.sortData(result, "value", "string");
+        this.unorderedShoppingList = result;
+        console.log("unorderedShoppingList", this.unorderedShoppingList);
+        this.shoppingList = result;
+        this.shoppingList.items = helpers.subsetListItems(
+          this.shoppingList.items
+        );
+        this.breadCrumbData[3].name = result.name;
         this.isLoading = false;
       })
       .catch((e) => {
@@ -157,84 +141,34 @@ export default {
       });
   },
   methods: {
-    resetMessage() {
-      if (this.message || this.messageType) {
-        this.message = "";
-        this.messageType = "";
+    selectItem(id) {
+      if (this.selectedItems.includes(id)) {
+        let index = this.selectedItems.indexOf(id);
+        this.selectedItems.splice(index, 1);
+      } else {
+        this.selectedItems.push(id);
       }
     },
-    add(e) {
+    editAmount(e, itemId, operation) {
       e.preventDefault();
+      this.selectItem(itemId);
       this.isLoading = true;
-      // Check for errors
-      if (!this.value) {
-        this.message = "Insert the Value.";
-        this.messageType = "error";
-        return;
-      }
-      if (!this.type) {
-        this.message = "Select the type.";
-        this.messageType = "error";
-        return;
-      }
-      //Add stuff in the DB
       const data = {
-        id: helpers.makeId(15),
-        value: this.value,
-        type: this.type,
+        id: this.shoppingList.id,
+        itemId: itemId,
+        items: this.unorderedShoppingList.items,
+        operation: operation,
       };
-      unitServices
-        .create(data)
+      shoppingListServices
+        .updateItemAmount(data)
         .then(() => {
-          unitServices
-            .getAll()
+          shoppingListServices
+            .getById(this.id)
             .then((result) => {
-              this.unitList = helpers.sortData(result, "value", "string");
-              this.message = "Unit correctly created.";
-              this.messageType = "success";
-              this.isLoading = false;
-            })
-            .catch((e) => {
-              console.log(e);
-              this.isLoading = false;
-            });
-        })
-        .catch((e) => {
-          this.message = e;
-          this.messageType = "error";
-          this.isLoading = false;
-        });
-    },
-    edit(e) {
-      e.preventDefault();
-      this.isLoading = true;
-      // Check for errors
-      if (!this.editData.value) {
-        this.editMessage = "Insert the Value.";
-        this.messageType = "error";
-        return;
-      }
-      if (!this.editData.type) {
-        this.editMessage = "Select the type.";
-        this.messageType = "error";
-        return;
-      }
-      //Add stuff in the DB
-      const data = {
-        id: this.editData.id,
-        value: this.editData.value,
-        type: this.editData.type,
-      };
-      console.log("editData: EDIT", data);
-      unitServices
-        .update(data)
-        .then(() => {
-          unitServices
-            .getAll()
-            .then((result) => {
-              this.unitList = helpers.sortData(result, "value", "string");
-              this.editMessage = "Unit correctly modified.";
-              this.messageType = "success";
+              this.shoppingList = result;
+              this.shoppingList.items = helpers.subsetListItems(
+                this.shoppingList.items
+              );
               this.isLoading = false;
             })
             .catch((e) => {
@@ -248,41 +182,14 @@ export default {
           this.isLoading = false;
         });
     },
-    remove(id) {
-      this.isLoading = true;
-      unitServices
-        .delete(id)
-        .then(() => {
-          unitServices
-            .getAll()
-            .then((result) => {
-              this.unitList = helpers.sortData(result, "value", "string");
-              this.isLoading = false;
-            })
-            .catch((e) => {
-              console.log(e);
-              this.isLoading = false;
-            });
-        })
-        .catch((e) => {
-          console.log(e);
-          this.isLoading = false;
-        });
-    },
-    openDialog(data) {
-      this.editData.id = data.id;
-      this.editData.value = data.value;
-      this.editData.type = data.type;
-      this.dialogState = true;
-      console.log("editData: opendialog", this.editData);
-    },
+    decreaseAmount() {},
   },
 };
 </script>
 
 
 <style scoped>
-.unit-box {
+.box {
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;
@@ -294,8 +201,89 @@ export default {
   margin-top: 2px;
 }
 
-.buttons-wrapper {
+.strike {
+  display: block;
+  /* text-align: center; */
+  overflow: hidden;
+  white-space: nowrap;
+
+  font-size: 20px;
+}
+
+.strike > span {
+  color: white;
+  position: relative;
+  display: inline-block;
+}
+
+.strike > span:before,
+.strike > span:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 9999px;
+  /* Here is the modification */
+  border-top: 4px double rgb(255, 255, 255);
+}
+
+.strike > span:before {
+  right: 100%;
+  margin-right: 15px;
+}
+
+.strike > span:after {
+  left: 100%;
+  margin-left: 15px;
+}
+
+.list-item {
+  position: relative;
+  padding: 12px;
+  border-radius: 8px;
+  height: 100%;
+  background-color: white;
+  background-position-x: 107%;
+  background-position-y: -45%;
+  background-size: 165px;
+  background-repeat: no-repeat;
+  border: 2px solid white;
+  transition: all 0.1s ease-in-out;
+  cursor: pointer;
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+}
+.list-item p {
+  margin-bottom: 0px;
+}
+.list-item.selected {
+  background-color: #abe4ae;
+}
+.list-item:hover {
+  background-color: #e6e6e6;
+  box-shadow: var(--large-large-shadow);
+  transform: scale(1.02);
+}
+.list-item.selected:hover {
+  background-color: #80b482;
+}
+
+.category-icon {
+  margin-bottom: 4px;
+}
+
+.amountinput .input {
+  padding: 10px;
+  border: 1px solid grey;
+  display: block;
+  background-color: white;
+  text-align: center;
+  font-size: 20px;
+  width: 100%;
+}
+.amountinput .input.plus {
+  border-radius: 6px 6px 0px 0px;
+}
+.amountinput .input.minus {
+  border-radius: 0px 0px 6px 6px;
 }
 </style>

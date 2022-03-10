@@ -57,6 +57,14 @@ h1 {
   font-style: italic;
 }
 
+/* DIALOG */
+
+.g-dialog-content {
+  padding: 18px;
+}
+
+/* BUTTONS */
+
 .btn.btn-custom {
   color: white;
   background-color: var(--black);
@@ -66,6 +74,19 @@ h1 {
   background-color: var(--dark-black);
 }
 .btn.btn-custom:focus {
+  transform: scale(0.95);
+  box-shadow: var(--medium-large-shadow);
+}
+.btn.btn-custom-secondary {
+  color: var(--black);
+  border: 2px solid var(--black);
+  background-color: white;
+}
+.btn.btn-custom-secondary:hover {
+  color: var(--black);
+  background-color: white;
+}
+.btn.btn-custom-secondary:focus {
   transform: scale(0.95);
   box-shadow: var(--medium-large-shadow);
 }
@@ -89,11 +110,14 @@ h1 {
 .icon.heart-icon {
   width: 20px;
 }
+.icon.category-icon {
+  width: 16px;
+}
 .icon.heart-full-icon {
-  width: 20px;
+  width: 25px;
 }
 .icon.trash-black-icon {
-  width: 20px;
+  width: 25px;
 }
 
 /* Margin */
@@ -102,4 +126,10 @@ h1 {
 }
 .ml-3 {
   margin-left: 1rem;
+}
+.mr-2 {
+  margin-right: 0.75rem;
+}
+.ml-2 {
+  margin-left: 0.75rem;
 }

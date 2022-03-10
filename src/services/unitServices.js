@@ -15,7 +15,6 @@ class UnitServices {
     });
   }
   update(data) {
-    console.log('UPDATE', data)
     return ref.doc(data.id).update({
       value: data.value,
       type: data.type,
